@@ -19,6 +19,7 @@ func GenerateModel() {
 
 	// generate from struct in project
 	g.ApplyBasic(model.Contacts{})
+	g.ApplyBasic(model.ContactGroups{})
 
 	g.Execute()
 }
