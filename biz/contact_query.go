@@ -3,12 +3,13 @@ package biz
 import (
 	"context"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/alandtsang/gormgen/dal"
 	"github.com/alandtsang/gormgen/dal/model"
 	"github.com/alandtsang/gormgen/dal/query"
 	"gorm.io/gen"
-	"log"
-	"time"
 )
 
 type Contact struct {
@@ -19,7 +20,7 @@ type Contact struct {
 	EmailConfirmed  int
 }
 
-func ContactsCrud() {
+func ContactCrud() {
 	//createContactsDemo()
 	listContactsDemo()
 	//getContactsDemo()
@@ -47,7 +48,7 @@ func createContactsDemo() {
 func listContactsDemo() {
 	ctx := context.Background()
 
-	contactIDs := []int{1, 2, 4}
+	contactIDs := []uint64{1, 2, 3}
 
 	modelContacts, err := listContacts(ctx, contactIDs)
 	if err != nil {
@@ -60,7 +61,7 @@ func listContactsDemo() {
 
 func getContactsDemo() {
 	ctx := context.Background()
-	contactID := 4
+	var contactID uint64 = 4
 
 	contact, err := fetchContacts(ctx, contactID)
 	if err != nil {
@@ -72,7 +73,7 @@ func getContactsDemo() {
 func updateContactsDemo() {
 	ctx := context.Background()
 
-	contactID := 1
+	var contactID uint64 = 1
 
 	if err := updateContacts(ctx, contactID, nil); err != nil {
 		log.Fatal(err)
@@ -82,7 +83,7 @@ func updateContactsDemo() {
 func deleteContactsDemo() {
 	ctx := context.Background()
 
-	contactIDs := []int{5}
+	contactIDs := []uint64{5}
 
 	if err := deleteContacts(ctx, contactIDs); err != nil {
 		log.Fatal(err)
@@ -90,12 +91,12 @@ func deleteContactsDemo() {
 }
 
 func createContacts(ctx context.Context, contacts []*Contact) (err error) {
-	var contactModels []*model.Contacts
+	var contactModels []*model.Contact
 
 	now := time.Now()
 
 	for _, con := range contacts {
-		contactModels = append(contactModels, &model.Contacts{
+		contactModels = append(contactModels, &model.Contact{
 			Name:            con.Name,
 			Mobile:          con.Mobile,
 			MobileConfirmed: con.MobileConfirmed,
@@ -106,7 +107,7 @@ func createContacts(ctx context.Context, contacts []*Contact) (err error) {
 		})
 	}
 
-	c := query.Use(dal.DB).Contacts
+	c := query.Use(dal.DB).Contact
 	if err = c.WithContext(ctx).Create(contactModels...); err != nil {
 		fmt.Printf("Create contact failed, %v", err)
 		return err
@@ -114,8 +115,8 @@ func createContacts(ctx context.Context, contacts []*Contact) (err error) {
 	return err
 }
 
-func listContacts(ctx context.Context, contactIDs []int) (contacts []*model.Contacts, err error) {
-	c := query.Use(dal.DB).Contacts
+func listContacts(ctx context.Context, contactIDs []uint64) (contacts []*model.Contact, err error) {
+	c := query.Use(dal.DB).Contact
 	if len(contactIDs) > 0 {
 		contacts, err = c.WithContext(ctx).WithContext(ctx).Where(c.ID.In(contactIDs...)).Find()
 	} else {
@@ -128,8 +129,8 @@ func listContacts(ctx context.Context, contactIDs []int) (contacts []*model.Cont
 	return contacts, nil
 }
 
-func fetchContacts(ctx context.Context, contactID int) (*model.Contacts, error) {
-	c := query.Use(dal.DB).Contacts
+func fetchContacts(ctx context.Context, contactID uint64) (*model.Contact, error) {
+	c := query.Use(dal.DB).Contact
 	contact, err := c.WithContext(ctx).Where(c.ID.Eq(contactID)).First()
 	if err != nil {
 		fmt.Printf("Fetch contact failed, %v\n", err)
@@ -138,8 +139,8 @@ func fetchContacts(ctx context.Context, contactID int) (*model.Contacts, error) 
 	return contact, nil
 }
 
-func updateContacts(ctx context.Context, contactID int, updates map[string]interface{}) (err error) {
-	c := query.Use(dal.DB).Contacts
+func updateContacts(ctx context.Context, contactID uint64, updates map[string]interface{}) (err error) {
+	c := query.Use(dal.DB).Contact
 
 	if len(updates) > 0 {
 		var result gen.ResultInfo
@@ -153,8 +154,8 @@ func updateContacts(ctx context.Context, contactID int, updates map[string]inter
 	return nil
 }
 
-func deleteContacts(ctx context.Context, contactIDs []int) (err error) {
-	c := query.Use(dal.DB).Contacts
+func deleteContacts(ctx context.Context, contactIDs []uint64) (err error) {
+	c := query.Use(dal.DB).Contact
 	if _, err = c.WithContext(ctx).Where(c.ID.In(contactIDs...)).Delete(); err != nil {
 		fmt.Printf("Delete contact failed, %v", err)
 		return err

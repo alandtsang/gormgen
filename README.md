@@ -1,4 +1,5 @@
 # gormgen
+
 go-gorm gen demo
 
 ## Documentation
@@ -10,42 +11,36 @@ go-gorm gen demo
 Step 1: Create Table
 
 ```sql
-CREATE TABLE `Contacts` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `name` varchar(255),
-  `mobile` varchar(255),
-  `mobile_confirmed` bool,
-  `email` varchar(255),
-  `email_confirmed` bool,
-  `created_at` timestamp,
-  `updated_at` timestamp
-);
-
-CREATE TABLE `ContactGroups` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `name` varchar(255),
-  `remarks` varchar(255),
-  `created_at` timestamp,
-  `updated_at` timestamp
-);
+CREATE TABLE `contact`
+(
+    `id`               bigint(20) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'id',
+    `name`             varchar(255)        NOT NULL COMMENT 'name',
+    `mobile`           varchar(255)        NOT NULL COMMENT 'mobile',
+    `mobile_confirmed` tinyint(1)                   DEFAULT false COMMENT 'mobile_confirmed',
+    `email`            varchar(255)                 DEFAULT '' COMMENT 'email',
+    `email_confirmed`  tinyint(1)                   DEFAULT false COMMENT 'email_confirmed',
+    `created_at`       timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'created_at',
+    `updated_at`       timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'updated_at'
+) ENGINE = InnoDB
+  COLLATE = utf8mb4_bin COMMENT = 'Contact Information';
 ```
 
 Step 2: Define the model
 
 ```go
-type Contacts struct {
-	ID              int       `gorm:"column:id;primary_key;AUTO_INCREMENT"`
-	Name            string    `gorm:"column:name"`
-	Mobile          string    `gorm:"column:mobile"`
-	MobileConfirmed int       `gorm:"column:mobile_confirmed"`
-	Email           string    `gorm:"column:email"`
-	EmailConfirmed  int       `gorm:"column:email_confirmed"`
-	CreatedAt       time.Time `gorm:"column:created_at"`
-	UpdatedAt       time.Time `gorm:"column:updated_at"`
+type Contact struct {
+    ID              uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT"`                 // id
+    Name            string    `gorm:"column:name;NOT NULL"`                                 // name
+    Mobile          string    `gorm:"column:mobile;NOT NULL"`                               // mobile
+    MobileConfirmed int       `gorm:"column:mobile_confirmed;default:0"`                    // mobile_confirmed
+    Email           string    `gorm:"column:email"`                                         // email
+    EmailConfirmed  int       `gorm:"column:email_confirmed;default:0"`                     // email_confirmed
+    CreatedAt       time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP;NOT NULL"` // created_at
+    UpdatedAt       time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP;NOT NULL"` // updated_at
 }
 
-func (Contacts) TableName() string {
-	return "contacts"
+func (Contact) TableName() string {
+    return "contact"
 }
 ```
 
@@ -58,8 +53,7 @@ make model && ./model
 ```
 GO111MODULE=on go build -o model cmd/modelgen/modelgen.go
 2022/05/25 15:53:00 Start generating code.
-2022/05/25 15:53:00 generate query file: /Users/aland/gowork/src/github.com/alandtsang/gormgen/dal/query/contacts.gen.go
-2022/05/25 15:53:00 generate query file: /Users/aland/gowork/src/github.com/alandtsang/gormgen/dal/query/contactgroups.gen.go
+2022/05/25 15:53:00 generate query file: /Users/aland/gowork/src/github.com/alandtsang/gormgen/dal/query/contact.gen.go
 2022/05/25 15:53:00 generate query file: /Users/aland/gowork/src/github.com/alandtsang/gormgen/dal/query/gen.go
 2022/05/25 15:53:00 Generate code done.
 ```
@@ -71,15 +65,8 @@ make build && ./main
 ```
 
 ```
-GO111MODULE=on go build -o main cmd/gormgen/gormgen.go
-
-2022/05/25 15:55:00 /Users/aland/gowork/src/github.com/alandtsang/gormgen/vendor/gorm.io/gen/do.go:603
-[2.082ms] [rows:2] SELECT * FROM `Contacts` WHERE `Contacts`.`id` IN (1,2,4)
-contact: &{ID:1 Name:Alan Mobile: MobileConfirmed:0 Email: EmailConfirmed:0 CreatedAt:2022-05-12 02:59:39 +0000 UTC UpdatedAt:2022-05-12 08:38:15 +0000 UTC}
-contact: &{ID:2 Name:Alan Mobile: MobileConfirmed:0 Email: EmailConfirmed:0 CreatedAt:2022-05-12 08:14:30 +0000 UTC UpdatedAt:2022-05-12 08:14:30 +0000 UTC}
-
-2022/05/25 15:55:00 /Users/aland/gowork/src/github.com/alandtsang/gormgen/vendor/gorm.io/gen/do.go:603
-[0.534ms] [rows:0] SELECT * FROM `ContactGroups` WHERE `ContactGroups`.`id` = 1
+[1.448ms] [rows:1] SELECT * FROM `contact` WHERE `contact`.`id` IN (1,2,3)
+contact: &{ID:1 Name:Alan Mobile:15911111111 MobileConfirmed:1 Email:zengxianglong0@gmail.com EmailConfirmed:1 CreatedAt:2023-02-07 03:09:58 +0000 UTC UpdatedAt:2023-02-07 03:09:58 +0000 UTC}
 ```
 
 ## License
