@@ -12,51 +12,44 @@ import (
 )
 
 var (
-	Q             = new(Query)
-	ContactGroups *contactGroups
-	Contacts      *contacts
+	Q       = new(Query)
+	Contact *contact
 )
 
 func SetDefault(db *gorm.DB) {
 	*Q = *Use(db)
-	ContactGroups = &Q.ContactGroups
-	Contacts = &Q.Contacts
+	Contact = &Q.Contact
 }
 
 func Use(db *gorm.DB) *Query {
 	return &Query{
-		db:            db,
-		ContactGroups: newContactGroups(db),
-		Contacts:      newContacts(db),
+		db:      db,
+		Contact: newContact(db),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	ContactGroups contactGroups
-	Contacts      contacts
+	Contact contact
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:            db,
-		ContactGroups: q.ContactGroups.clone(db),
-		Contacts:      q.Contacts.clone(db),
+		db:      db,
+		Contact: q.Contact.clone(db),
 	}
 }
 
 type queryCtx struct {
-	ContactGroups contactGroupsDo
-	Contacts      contactsDo
+	Contact contactDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		ContactGroups: *q.ContactGroups.WithContext(ctx),
-		Contacts:      *q.Contacts.WithContext(ctx),
+		Contact: *q.Contact.WithContext(ctx),
 	}
 }
 

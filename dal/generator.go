@@ -5,7 +5,7 @@ import (
 	"gorm.io/gen"
 )
 
-const mysqlDSN = "root:11223344@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True"
+const mysqlDSN = "root:11223344@tcp(localhost:3306)/gen?charset=utf8mb4&parseTime=True"
 
 func init() {
 	DB = ConnectDB(mysqlDSN).Debug()
@@ -17,9 +17,10 @@ func GenerateModel() {
 		Mode:    gen.WithDefaultQuery,
 	})
 
+	g.UseDB(DB)
+
 	// generate from struct in project
-	g.ApplyBasic(model.Contacts{})
-	g.ApplyBasic(model.ContactGroups{})
+	g.ApplyBasic(model.Contact{})
 
 	g.Execute()
 }
