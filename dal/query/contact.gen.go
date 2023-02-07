@@ -6,6 +6,7 @@ package query
 
 import (
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -114,6 +115,60 @@ func (c contact) clone(db *gorm.DB) contact {
 }
 
 type contactDo struct{ gen.DO }
+
+// SELECT * FROM @@table WHERE id=@id
+func (c contactDo) GetByID(id uint64) (result *model.Contact, err error) {
+	params := make(map[string]interface{}, 0)
+
+	var generateSQL strings.Builder
+	params["id"] = id
+	generateSQL.WriteString("SELECT * FROM contact WHERE id=@id ")
+
+	var executeSQL *gorm.DB
+	if len(params) > 0 {
+		executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params).Take(&result)
+	} else {
+		executeSQL = c.UnderlyingDB().Raw(generateSQL.String()).Take(&result)
+	}
+	err = executeSQL.Error
+	return
+}
+
+// SELECT * FROM @@table WHERE name IN @names
+func (c contactDo) ListByNames(names []string) (result []*model.Contact, err error) {
+	params := make(map[string]interface{}, 0)
+
+	var generateSQL strings.Builder
+	params["names"] = names
+	generateSQL.WriteString("SELECT * FROM contact WHERE name IN @names ")
+
+	var executeSQL *gorm.DB
+	if len(params) > 0 {
+		executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params).Find(&result)
+	} else {
+		executeSQL = c.UnderlyingDB().Raw(generateSQL.String()).Find(&result)
+	}
+	err = executeSQL.Error
+	return
+}
+
+// DELETE FROM @@table WHERE id IN @ids
+func (c contactDo) DeleteByIDs(ids []uint64) (err error) {
+	params := make(map[string]interface{}, 0)
+
+	var generateSQL strings.Builder
+	params["ids"] = ids
+	generateSQL.WriteString("DELETE FROM contact WHERE id IN @ids ")
+
+	var executeSQL *gorm.DB
+	if len(params) > 0 {
+		executeSQL = c.UnderlyingDB().Exec(generateSQL.String(), params)
+	} else {
+		executeSQL = c.UnderlyingDB().Exec(generateSQL.String())
+	}
+	err = executeSQL.Error
+	return
+}
 
 func (c contactDo) Debug() *contactDo {
 	return c.withDO(c.DO.Debug())

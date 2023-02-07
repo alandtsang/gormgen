@@ -21,6 +21,7 @@ func GenerateModel() {
 
 	// generate from struct in project
 	g.ApplyBasic(model.Contact{})
+	g.ApplyInterface(func(model.Method) {}, model.Contact{})
 
 	g.Execute()
 }

@@ -66,7 +66,7 @@ make build && ./main
 
 ```
 [1.448ms] [rows:1] SELECT * FROM `contact` WHERE `contact`.`id` IN (1,2,3)
-contact: &{ID:1 Name:Alan Mobile:15911111111 MobileConfirmed:1 Email:zengxianglong0@gmail.com EmailConfirmed:1 CreatedAt:2023-02-07 03:09:58 +0000 UTC UpdatedAt:2023-02-07 03:09:58 +0000 UTC}
+contact: &{ID:1 Name:Tom Mobile:15911111111 MobileConfirmed:1 Email:tom@gmail.com EmailConfirmed:0 CreatedAt:2023-02-07 03:09:58 +0000 UTC UpdatedAt:2023-02-07 03:09:58 +0000 UTC}
 ```
 
 ## License
