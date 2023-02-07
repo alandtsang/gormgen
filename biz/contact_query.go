@@ -3,13 +3,11 @@ package biz
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/alandtsang/gormgen/dal"
 	"github.com/alandtsang/gormgen/dal/model"
 	"github.com/alandtsang/gormgen/dal/query"
-	"gorm.io/gen"
 )
 
 type Contact struct {
@@ -18,110 +16,33 @@ type Contact struct {
 	MobileConfirmed int
 	Email           string
 	EmailConfirmed  int
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
-func ContactCrud() {
-	//createContactsDemo()
-	listContactsDemo()
-	//getContactsDemo()
-	//updateContactsDemo()
-	//deleteContactsDemo()
-}
-
-func createContactsDemo() {
-	ctx := context.Background()
-
-	contacts := []*Contact{
-		{
-			Name: "Alan",
-		},
-		{
-			Name: "Tom",
-		},
-	}
-
-	if err := createContacts(ctx, contacts); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func listContactsDemo() {
-	ctx := context.Background()
-
-	contactIDs := []uint64{1, 2, 3}
-
-	modelContacts, err := listContacts(ctx, contactIDs)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, con := range modelContacts {
-		fmt.Printf("contact: %+v\n", con)
-	}
-}
-
-func getContactsDemo() {
-	ctx := context.Background()
-	var contactID uint64 = 4
-
-	contact, err := fetchContacts(ctx, contactID)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("contact: %+v\n", contact)
-}
-
-func updateContactsDemo() {
-	ctx := context.Background()
-
-	var contactID uint64 = 1
-
-	if err := updateContacts(ctx, contactID, nil); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func deleteContactsDemo() {
-	ctx := context.Background()
-
-	contactIDs := []uint64{5}
-
-	if err := deleteContacts(ctx, contactIDs); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func createContacts(ctx context.Context, contacts []*Contact) (err error) {
-	var contactModels []*model.Contact
-
-	now := time.Now()
-
-	for _, con := range contacts {
-		contactModels = append(contactModels, &model.Contact{
-			Name:            con.Name,
-			Mobile:          con.Mobile,
-			MobileConfirmed: con.MobileConfirmed,
-			Email:           con.Email,
-			EmailConfirmed:  con.EmailConfirmed,
-			CreatedAt:       now,
-			UpdatedAt:       now,
-		})
+func CreateContact(ctx context.Context, contact *Contact) (err error) {
+	contactModel := &model.Contact{
+		Name:            contact.Name,
+		Mobile:          contact.Mobile,
+		MobileConfirmed: contact.MobileConfirmed,
+		Email:           contact.Email,
+		EmailConfirmed:  contact.EmailConfirmed,
+		CreatedAt:       contact.CreatedAt,
+		UpdatedAt:       contact.UpdatedAt,
 	}
 
 	c := query.Use(dal.DB).Contact
-	if err = c.WithContext(ctx).Create(contactModels...); err != nil {
+	if err = c.WithContext(ctx).Create(contactModel); err != nil {
 		fmt.Printf("Create contact failed, %v", err)
 		return err
 	}
 	return err
 }
 
-func listContacts(ctx context.Context, contactIDs []uint64) (contacts []*model.Contact, err error) {
+func ListContactsByNames(ctx context.Context, names ...string) (contacts []*model.Contact, err error) {
 	c := query.Use(dal.DB).Contact
-	if len(contactIDs) > 0 {
-		contacts, err = c.WithContext(ctx).WithContext(ctx).Where(c.ID.In(contactIDs...)).Find()
-	} else {
-		contacts, err = c.WithContext(ctx).WithContext(ctx).Find()
-	}
+
+	contacts, err = c.WithContext(ctx).ListByNames(names)
 	if err != nil {
 		fmt.Printf("List contacts failed, %v", err)
 		return nil, err
@@ -129,9 +50,10 @@ func listContacts(ctx context.Context, contactIDs []uint64) (contacts []*model.C
 	return contacts, nil
 }
 
-func fetchContacts(ctx context.Context, contactID uint64) (*model.Contact, error) {
+func FetchContactByID(ctx context.Context, contactID uint64) (*model.Contact, error) {
 	c := query.Use(dal.DB).Contact
-	contact, err := c.WithContext(ctx).Where(c.ID.Eq(contactID)).First()
+
+	contact, err := c.WithContext(ctx).GetByID(contactID)
 	if err != nil {
 		fmt.Printf("Fetch contact failed, %v\n", err)
 		return nil, err
@@ -139,24 +61,22 @@ func fetchContacts(ctx context.Context, contactID uint64) (*model.Contact, error
 	return contact, nil
 }
 
-func updateContacts(ctx context.Context, contactID uint64, updates map[string]interface{}) (err error) {
+func UpdateContact(ctx context.Context, contactID uint64, updates map[string]interface{}) (err error) {
 	c := query.Use(dal.DB).Contact
 
 	if len(updates) > 0 {
-		var result gen.ResultInfo
-		result, err = c.WithContext(ctx).Where(c.ID.Eq(contactID)).Updates(updates)
-		if err != nil {
+		if _, err = c.WithContext(ctx).Where(c.ID.Eq(contactID)).Updates(updates); err != nil {
 			fmt.Printf("Update contact failed, %v", err)
 			return err
 		}
-		fmt.Printf("update result: %+v\n", result)
 	}
 	return nil
 }
 
-func deleteContacts(ctx context.Context, contactIDs []uint64) (err error) {
+func DeleteContacts(ctx context.Context, contactIDs []uint64) (err error) {
 	c := query.Use(dal.DB).Contact
-	if _, err = c.WithContext(ctx).Where(c.ID.In(contactIDs...)).Delete(); err != nil {
+
+	if err = c.WithContext(ctx).DeleteByIDs(contactIDs); err != nil {
 		fmt.Printf("Delete contact failed, %v", err)
 		return err
 	}

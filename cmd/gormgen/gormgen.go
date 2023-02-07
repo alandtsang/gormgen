@@ -1,7 +1,17 @@
 package main
 
-import "github.com/alandtsang/gormgen/biz"
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/alandtsang/gormgen/biz"
+)
 
 func main() {
-	biz.ContactCrud()
+	contact, err := biz.FetchContactByID(context.Background(), 1)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("contact: %+v\n", contact)
 }
